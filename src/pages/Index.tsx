@@ -18,13 +18,13 @@ const Index = () => {
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
   const [isLetterModalOpen, setIsLetterModalOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     fetchLetters();
     setupRealtimeSubscription();
-    playAudio();
   }, []);
 
   const fetchLetters = async () => {
@@ -63,22 +63,16 @@ const Index = () => {
     };
   };
 
-  const playAudio = () => {
+  const handleInitialClick = () => {
+    setHasInteracted(true);
     if (audioRef.current) {
       audioRef.current.play().catch((error) => {
-        console.log('Audio autoplay prevented:', error);
+        console.log('Audio play failed:', error);
       });
     }
   };
 
   const handleScreenClick = () => {
-    // Ensure audio plays on user interaction
-    if (audioRef.current && audioRef.current.paused) {
-      audioRef.current.play().catch((error) => {
-        console.log('Audio play failed:', error);
-      });
-    }
-    
     if (letters.length === 0) return;
     
     const randomLetter = letters[Math.floor(Math.random() * letters.length)];
@@ -110,13 +104,30 @@ const Index = () => {
         src="/bg.m4a"
       />
 
+      {/* Initial Click Overlay */}
+      {!hasInteracted && (
+        <div
+          onClick={handleInitialClick}
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer animate-fade-in"
+          role="button"
+          aria-label="Click to enter"
+        >
+          <div className="text-center space-y-4 animate-pulse">
+            <p className="text-2xl font-light text-paper tracking-wider">Click anywhere to enter</p>
+            <p className="text-sm text-paper/60">Sound on recommended</p>
+          </div>
+        </div>
+      )}
+
       {/* Clickable Area */}
-      <div
-        onClick={handleScreenClick}
-        className="fixed inset-0 cursor-pointer transition-all hover:bg-white/5"
-        role="button"
-        aria-label="Click to read a letter"
-      />
+      {hasInteracted && (
+        <div
+          onClick={handleScreenClick}
+          className="fixed inset-0 cursor-pointer transition-all hover:bg-white/5"
+          role="button"
+          aria-label="Click to read a letter"
+        />
+      )}
 
       {/* Add Letter Button */}
       <Button
