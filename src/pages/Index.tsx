@@ -72,6 +72,13 @@ const Index = () => {
   };
 
   const handleScreenClick = () => {
+    // Ensure audio plays on user interaction
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.play().catch((error) => {
+        console.log('Audio play failed:', error);
+      });
+    }
+    
     if (letters.length === 0) return;
     
     const randomLetter = letters[Math.floor(Math.random() * letters.length)];
